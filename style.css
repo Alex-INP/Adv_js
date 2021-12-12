@@ -1,0 +1,36 @@
+.html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: rgb(171, 175, 228);
+    height: 50px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cart-button{
+    background-color: rgb(205, 231, 231);
+    height: 30px;
+    width: 150px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 50px; 
+    border-radius: 20px;
+}
+
+.goods-list{
+    display: flex;
+    justify-content: space-around;
+    background-color: rgb(221, 221, 221);
+}
+
+.goods-item {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    height: 400px;
+    width: 250px;
+    border: black 3px solid;
+    background-color: rgb(205, 231, 231);
+}
