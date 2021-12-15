@@ -34,3 +34,23 @@
     border: black 3px solid;
     background-color: rgb(205, 231, 231);
 }
+
+.cart-table {
+    border: black 3px solid;
+    border-collapse: collapse;
+    background-color: white;
+    position: absolute;
+    right: 10px;
+    z-index: 1;
+}
+.cart-table td {
+    padding: 5px;
+    text-align: center;
+    width: 100px;
+    border-top: black 1px solid;
+    border-bottom: black 1px solid;
+}
+
+.table-heder > td {
+    border: black 3px solid;
+}
