@@ -1,130 +1,198 @@
+const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+
+function send(onError, onSuccess, url, method = 'GET', data = '', args = {}, headers = {}, timeout = 60000) {
+ 
+  let xhr;
+
+  if (window.XMLHttpRequest) {
+    // Chrome, Mozilla, Opera, Safari
+    xhr = new XMLHttpRequest();
+  } else if (window.ActiveXObject) { 
+    // Internet Explorer
+    xhr = new ActiveXObject("Microsoft.XMLHTTP");
+  }
+
+  for([key, value] of Object.entries(headers)) {
+    xhr.setRequestHeader(key, value)
+  }
+
+  xhr.timeout = timeout; 
+
+  xhr.ontimeout = onError;
+
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if(xhr.status < 400) {
+        onSuccess(xhr.responseText, args)
+      } else if (xhr.status >= 400) {
+        onError(xhr.status)
+      }
+    }
+  }
+
+  xhr.open(method, url, true);
+
+  xhr.send(data);
+}
+
 function getCounter() {
-    let last = 0;
-  
-    return () => ++last;
+  let last = 0;
+
+  return () => ++last;
+}
+
+const stackIDGenrator = getCounter()
+
+
+class Good {
+  constructor({id, title, price}) {
+    this.id = id;
+    this.title = title;
+    this.price = price;
   }
-  
-  const stackIDGenrator = getCounter()
-  
-  
-  class Good {
-    constructor({id, title, price}) {
-      this.id = id;
-      this.title = title;
-      this.price = price;
-    }
-  
-    getId() {
-      return this.id;
-    }
-  
-    getPrice() {
-      return this.price;
-    }
-  
-    getTitle() {
-      return this.title;
-    }
+
+  getId() {
+    return this.id;
   }
-  
-  class GoodStack {
-    constructor(good) {
-      this.id = stackIDGenrator();
-      this.good = good;
-      this.count = 1;
-    }
-  
-    getGoodId() {
-      return this.good.id
-    }
-  
-    getGood(){
-      return this.good;
-    }
-  
-    getCount() {
-      return this.count;
-    }
-  
-    add() {
-      this.count++;
-      return this.count;
-    }
-  
-    remove() {
-      this.count--;
-      return this.count;
-    }
+
+  getPrice() {
+    return this.price;
   }
-  
-  class Cart {
-    constructor(){
-      this.list = []
+
+  getTitle() {
+    return this.title;
+  }
+}
+
+class GoodStack {
+  constructor(good) {
+    this.id = stackIDGenrator();
+    this.good = good;
+    this.count = 1;
+  }
+
+  getGoodId() {
+    return this.good.id
+  }
+
+  getGood(){
+    return this.good;
+  }
+
+  getCount() {
+    return this.count;
+  }
+
+  getPrice() {
+    return this.good.price * this.count
+  }
+
+  add() {
+    this.count++;
+    return this.count;
+  }
+
+  remove() {
+    this.count--;
+    return this.count;
+  }
+}
+
+class Cart {
+  constructor(){
+    this.list = []
+  }
+
+  add(good) {
+    const idx = this.list.findIndex((stack) => stack.getGoodId() == good.id)
+
+    if(idx >= 0) {
+      this.list[idx].add()
+    } else {
+      this.list.push(new GoodStack(good))
     }
-  
-    add(good) {
-      const idx = this.list.findIndex((stack) => stack.getGoodId() == good.id)
-  
-      if(idx >= 0) {
-        this.list[idx].add()
-      } else {
-        this.list.push(new GoodStack(good))
+
+  }
+
+  onSuccessCartRemove(response, args) {
+    const idx = this.list.findIndex((stack) => stack.getGoodId() == args.id)
+
+    if(idx >= 0) {
+      this.list[idx].remove()
+
+      if(this.list[idx].getCount() <= 0) {
+        this.list.splice(idx, 1)
       }
-  
-    }
-  
-    remove(id) {
-      const idx = this.list.findIndex((stack) => stack.getGoodId() == id)
-  
-      if(idx >= 0) {
-        this.list[idx].remove()
-  
-        if(this.list[idx].getCount() <= 0) {
-          this.list.splice(idx, 1)
-        }
-      } 
-  
+    } 
+  }
+
+  _onError(err) {
+    console.log(err);
+  }
+
+  remove(id) {
+    let data = `{"id":"${id}}"}`
+    let args = {"id": id}
+    send(this._onError, this.onSuccessCartRemove.bind(this), `${API_URL}deleteFromBasket.json`, "GET", data, args) 
+
+  }
+}
+
+class Showcase {
+  constructor(cart){
+    this.list = [];
+    this.cart = cart;
+  }
+
+  _onSuccess(response) {
+    const data = JSON.parse(response)
+    data.forEach(product => {
+      this.list.push(
+        new Good({id: product.id_product, title:product.product_name, price:product.price})
+      )
+    });
+  }
+
+  _onError(err) {
+    console.log(err);
+  }
+
+  fetchGoods() {
+    send(this._onError, this._onSuccess.bind(this), `${API_URL}catalogData.json`)
+  }
+
+  onSuccessCartadd(response, args){
+    const idx = this.list.findIndex((good) => args.id == good.id)
+
+    if(idx >= 0) {
+      this.cart.add(this.list[idx])
     }
   }
-  
-  class Showcase {
-    constructor(cart){
-      this.list = [];
-      this.cart = cart;
-    }
-  
-    fetchGoods() {
-      this.list = [
-        new Good({id: 1, title: 'Футболка', price: 140}),
-        new Good({id: 2, title: 'Брюки', price: 320}),
-        new Good({id: 3, title: 'Галстук', price: 24})
-      ]
-    }
-  
-    addToCart(id) {
-      const idx = this.list.findIndex((good) => id == good.id)
-  
-      if(idx >= 0) {
-        this.cart.add(this.list[idx])
-      }
-    }
+
+  addToCart(id) {
+    let data = `{"id":"${id}}"}`
+    let args = {"id": id}
+    send(this._onError, this.onSuccessCartadd.bind(this), `${API_URL}addToBasket.json`, "GET", data, args)
   }
-  
-  
-  const cart = new Cart()
-  const showcase = new Showcase(cart)
-  
-  showcase.fetchGoods();
-  
-  showcase.addToCart(1)
-  showcase.addToCart(1)
-  showcase.addToCart(1)
-  showcase.addToCart(3)
-  
-  cart.remove(1)
-  
-  
+}
+
+
+const cart = new Cart()
+const showcase = new Showcase(cart)
+
+showcase.fetchGoods();
+
+setTimeout(() => {
+  showcase.addToCart(123)
+  showcase.addToCart(123)
+  showcase.addToCart(123)
+  showcase.addToCart(456)
+
+  cart.remove(123)
+
+
   console.log(showcase, cart)
+}, 1000)
 
 // ------------------------------------------------------------------------------------
 
@@ -143,8 +211,11 @@ class ShowcaseRender {
     }
 }
 
-const goodsRenderer = new ShowcaseRender(showcase.list);
-goodsRenderer.renderGoods();
+setTimeout(() => {
+  const goodsRenderer = new ShowcaseRender(showcase.list);
+  goodsRenderer.renderGoods();
+}, 1500)
+
 
 
 class CartRender {
@@ -161,11 +232,23 @@ class CartRender {
     }
 
     renderCart(){
-        document.querySelector("main").insertAdjacentHTML("afterbegin", this.tableHtml)
-        console.log("TRIG")
+      send(this._onError, this.onSuccessCartRender.bind(this), `${API_URL}getBasket.json`)
+    }
+
+    onSuccessCartRender(){
+      document.querySelector("main").insertAdjacentHTML("afterbegin", this.tableHtml)
+    }
+
+    _onError(err) {
+      console.log(err);
     }
 } 
 
-const cartRenderer = new CartRender(cart.list)
-cartRenderer.createTableHtml()
-document.querySelector(".cart-button").addEventListener("click", () => cartRenderer.renderCart())
+
+setTimeout(() => {
+  const cartRenderer = new CartRender(cart.list)
+  cartRenderer.createTableHtml()
+  document.querySelector(".cart-button").addEventListener("click", () => cartRenderer.renderCart())
+}, 1600)
+
+
