@@ -1,4 +1,4 @@
-const API_URL = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/';
+const API_URL = 'http://localhost:3000/api/v1/';
 
 function send(onError, onSuccess, url, method = 'GET', data = '', args = {}, headers = {}, timeout = 60000) {
  
@@ -133,7 +133,7 @@ class Cart {
   remove(id) {
     let data = `{"id":"${id}}"}`
     let args = {"id": id}
-    send(this._onError, this.onSuccessCartRemove.bind(this), `${API_URL}deleteFromBasket.json`, "GET", data, args) 
+    send(this._onError, this.onSuccessCartRemove.bind(this), `${API_URL}showcase`, "GET", data, args) 
 
   }
 }
@@ -148,7 +148,7 @@ class Showcase {
     const data = JSON.parse(response)
     data.forEach(product => {
       this.list.push(
-        new Good({id: product.id_product, title:product.product_name, price:product.price})
+        new Good({id: product.id, title:product.title, price:product.price})
       )
     });
   }
@@ -158,7 +158,7 @@ class Showcase {
   }
 
   fetchGoods() {
-    send(this._onError, this._onSuccess.bind(this), `${API_URL}catalogData.json`)
+    send(this._onError, this._onSuccess.bind(this), `${API_URL}showcase`)
   }
 
   onSuccessCartadd(response, args){
@@ -172,7 +172,7 @@ class Showcase {
   addToCart(id) {
     let data = `{"id":"${id}}"}`
     let args = {"id": id}
-    send(this._onError, this.onSuccessCartadd.bind(this), `${API_URL}addToBasket.json`, "GET", data, args)
+    send(this._onError, this.onSuccessCartadd.bind(this), `${API_URL}cart`, "GET", data, args)
   }
 }
 
@@ -183,12 +183,12 @@ const showcase = new Showcase(cart)
 showcase.fetchGoods();
 
 setTimeout(() => {
-  showcase.addToCart(123)
-  showcase.addToCart(123)
-  showcase.addToCart(123)
-  showcase.addToCart(456)
+  showcase.addToCart(1)
+  showcase.addToCart(1)
+  showcase.addToCart(1)
+  showcase.addToCart(3)
 
-  cart.remove(123)
+  cart.remove(1)
 
 
   console.log(showcase, cart)
@@ -232,7 +232,7 @@ class CartRender {
     }
 
     renderCart(){
-      send(this._onError, this.onSuccessCartRender.bind(this), `${API_URL}getBasket.json`)
+      send(this._onError, this.onSuccessCartRender.bind(this), `${API_URL}cart`)
     }
 
     onSuccessCartRender(){
