@@ -38,9 +38,8 @@ app.get('/api/v1/cart', (req, res) => {
 app.post('/api/v1/cart', (req, res) => {
   fs.readFile(cart_path, 'utf-8', (err, data) => {
     if(!err) {
-      console.log(req.body)
-      const cart = JSON.parse(data);
-      cart.push(req.body);
+      let cart = JSON.parse(data);
+      cart = req.body;
       fs.writeFile(cart_path, JSON.stringify(cart), 'utf-8', (err, data) => {
         res.sendStatus(201)
       })
@@ -51,21 +50,9 @@ app.post('/api/v1/cart', (req, res) => {
 })
 
 app.delete('/api/v1/cart', (req, res) => {
-  fs.readFile(cart_path, 'utf-8', (err, data) => {
-    if(!err) {
-      const cart_data = JSON.parse(data);
-      const id_to_delete = req.body.id
-
-      for(i in cart_data){
-        let element = cart_data[i]
-        if(element.id == id_to_delete){
-          cart_data.splice(cart_data.indexOf(element), 1)
-          break
-        }
-      } 
-      fs.writeFile(cart_path, JSON.stringify(cart_data), 'utf-8', (err, data) => {
-        res.sendStatus(204)
-      })
+  fs.writeFile(cart_path, JSON.stringify(req.body), 'utf-8', (err, data) => {
+    if (!err) {
+      res.sendStatus(204)
     } else {
       res.status(500).send(err)
     }
