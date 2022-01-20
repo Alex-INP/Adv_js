@@ -1,6 +1,5 @@
 <template>
     <table class="cart-table">
-        <button v-on:click="onClick">Закрыть</button>
         <tr class="table-header">
             <td>Название</td>
             <td>Количество</td>
@@ -17,11 +16,8 @@
 
 <script>
 export default {
-    name:"cart",
+    name:"cartForPage",
     methods:{
-        onClick(){
-            this.$emit("cart-close")
-        },
         onDelete(id, title, price){
             this.$store.dispatch("deleteFromCart", {id:id, title:title, price:price})
         }
@@ -39,14 +35,11 @@ export default {
         border: black 3px solid;
         border-collapse: collapse;
         background-color: white;
-        position: absolute;
-        right: 10px;
-        z-index: 1;
     }
     .cart-table td {
         padding: 5px;
         text-align: center;
-        width: 100px;
+        width: 100%;
         border-top: black 1px solid;
         border-bottom: black 1px solid;
     }

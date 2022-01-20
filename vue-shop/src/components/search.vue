@@ -1,6 +1,6 @@
 <template>
     <div>
-        <input v-on:change="changeInputData"/>
+        <input v-model="searchString"/>
         <button v-on:click="searchGoods">Поиск</button>
     </div>
 </template>
@@ -8,13 +8,10 @@
 <script>
 export default {
     name: "search",
-    props: [],
-    methods: {
-        searchGoods() {
-
-        },
-        changeInputData() {
-            console.log(document.querySelector("input").value)
+    computed: {
+        searchString: {
+            get() {return this.$store.getSearchString},
+            set(value) { this.$store.commit("setSearchString", value) }
         }
     }
 }

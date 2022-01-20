@@ -12,7 +12,8 @@ export default {
     props: ["good"],
     methods:{
         addToCart(id, title, price){
-            this.$emit("cart-add", {id:id, title:title, price:price, count:1})
+            this.$store.dispatch("addToCart", {id:id, title:title, price:price, count:1})
+            /* this.$emit("cart-add", {id:id, title:title, price:price, count:1}) */
 
         }
     }

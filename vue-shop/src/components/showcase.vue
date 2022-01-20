@@ -12,10 +12,14 @@ export default {
     components: {
         card
     },
-    props: ["card_list"],
     methods:{
         passEmit(good){
             this.$emit("cart-add", good)
+        }
+    },
+    computed:{
+        card_list(){
+            return this.$store.getters.getShowcase
         }
     }
 }
